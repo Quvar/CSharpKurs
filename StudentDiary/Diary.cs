@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Speech.Synthesis;
 
 namespace StudentDiary
 {
@@ -12,34 +13,68 @@ namespace StudentDiary
         }
         //Stan (zmienne - pola)
         List<float> ratings;
+
+        private string _name;
+
+        public string Name
+        {
+            get
+            {
+                return _name.ToUpper();
+            }
+            set 
+            {
+                if (!String.IsNullOrEmpty(value))
+                {
+                    if (_name != value)
+                    {
+                        NameChangedEventArgs args = new NameChangedEventArgs();
+                        args.ExistingName = _name;
+                        args.NewName = value;
+
+                        NameChanged(this, args);
+                    }
+
+
+                    _name = value;
+                }
+            }
+        }
+        // Zdarzenie
+
+        public event NameChangedDelegate NameChanged;
+
+
         //Zachowania
         public void AddRating(float rating)
         {
-            ratings.Add(rating);
+            if (rating >= 0 && rating <= 10)
+            {
+                ratings.Add(rating);
+            }
+            
         }
 
-        public float CalculateAverage()
+
+
+        internal DiaryStatistics ComputeStatistics()
         {
-            float sum = 0, avg = 0;
+            DiaryStatistics stats = new DiaryStatistics();
+
+            float sum = 0f;
 
             foreach (var rating in ratings)
             {
                 sum += rating;
             }
 
-            avg = sum / ratings.Count();
+            stats.AverageGrade = sum / ratings.Count();
+            stats.MaxGrade = ratings.Max();
+            stats.MinGrade = ratings.Min();
 
-            return avg;
-        }
-
-        public float GiveMaxRating()
-        {
-            return ratings.Max();
-        }
-
-        public float GiveMinRating()
-        {
-            return ratings.Min();
+            return stats;
         }
     }
 }
+
+       
